@@ -4,18 +4,26 @@
 #include <iostream>
 #include <type_traits>
 
-template <class T>
-constexpr T pow(const T base, const unsigned exponent)
+namespace tree_helper
 {
-	return exponent == 0
-		       ? 1
-		       : exponent % 2 == 0
-		       ? pow(base, exponent / 2) * pow(base, exponent / 2)
-		       : base * pow(base, (exponent - 1) / 2) * pow(base, (exponent - 1) / 2);
+	constexpr std::size_t pow(const std::size_t base, const unsigned exponent)
+	{
+		return exponent == 0
+			       ? 1
+			       : exponent % 2 == 0
+			       ? pow(base, exponent / 2) * pow(base, exponent / 2)
+			       : base * pow(base, (exponent - 1) / 2) * pow(base, (exponent - 1) / 2);
+	}
+
+	constexpr std::size_t num_nodes(const std::size_t levels)
+	{
+		return levels == 0 ? 1 : pow(4, levels) + num_nodes(levels - 1);
+	}
+
+	template <std::size_t Level>
+	using num_nodes_ = std::integral_constant<std::size_t, num_nodes(Level)>;
 }
 
-template <typename T, T Base, unsigned Exponent>
-using pow_ = std::integral_constant<T, pow(Base, Exponent)>;
 
 struct tree_node
 {
@@ -25,8 +33,13 @@ template <std::size_t Level>
 class quadtree
 {
 public:
-	quadtree() = default;
-private:
-	std::array<double, pow_<int, 4, Level>::value> data_;
-};
+	constexpr quadtree() : data_(), level_(Level)
+	{
+	}
 
+	void clear() { data_.fill(nullptr); }
+
+private:
+	std::array<tree_node*, tree_helper::num_nodes_<Level>::value> data_;
+	std::size_t level_;  
+};
