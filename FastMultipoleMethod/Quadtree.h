@@ -73,10 +73,10 @@ public:
 				auto [y, x] = std::div(i, width);
 
 				data_[last_index + i] = new tree_node(
-					x * 2 + y * 2 * next_width,
-					x * 2 + y * 2 * next_width + 1,
-					x * 2 + (y * 2 + 1) * next_width,
-					x * 2 + (y * 2 + 1) * next_width + 1
+					last_index + num_nodes + x * 2 + y * 2 * next_width,
+					last_index + num_nodes + x * 2 + y * 2 * next_width + 1,
+					last_index + num_nodes + x * 2 + (y * 2 + 1) * next_width,
+					last_index + num_nodes + x * 2 + (y * 2 + 1) * next_width + 1
 				);
 			}
 
