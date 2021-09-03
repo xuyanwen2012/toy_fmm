@@ -51,7 +51,7 @@ class quadtree
 	static_assert(Level <= 10, "Level should be less than 10.");
 
 public:
-	constexpr quadtree() : data_(), level_(Level)
+	quadtree() : data_(), level_(Level)
 	{
 		//  Setup helper tables
 		for (std::size_t i = 0; i < Level; ++i)
@@ -75,6 +75,50 @@ public:
 			}
 
 			last_index += num_nodes_at_level_[l];
+		}
+	}
+
+	void debug_print(const bool real_index = false) const
+	{
+		auto last_index = 0;
+
+
+		for (auto l = 0; l < level_ - 1; ++l)
+		{
+			std::cout << "Level " << l << ':';
+
+			const auto width = static_cast<int>(pow(2, l));
+
+			std::array<std::array<int, width>, width> display;
+			for (int x = 0; x < width; ++x)
+			{
+				for (int y = 0; y < width; ++y)
+				{
+					display[x][y] = 0;
+				}
+			}
+
+
+			for (int i = 0; i < num_nodes_at_level_[l]; ++i)
+			{
+				if (i % width == 0)
+				{
+					std::cout << std::endl;
+				}
+				if (real_index)
+				{
+					std::cout << last_index+i << ' ';
+
+				}else
+				{
+					std::cout << i << ' ';
+
+				}
+			}
+			last_index += num_nodes_at_level_[l];
+
+			std::cout << std::endl;
+			std::cout << std::endl;
 		}
 	}
 
