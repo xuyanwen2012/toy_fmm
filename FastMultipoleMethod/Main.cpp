@@ -27,7 +27,7 @@ int main()
 
 	const auto qt = quadtree<5>();
 
-	qt.debug_print();
+	qt.debug_print(false);
 
 	return EXIT_SUCCESS;
 }

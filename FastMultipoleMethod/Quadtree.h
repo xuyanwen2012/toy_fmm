@@ -62,15 +62,15 @@ public:
 		// Setup children tables
 		data_[0] = new tree_node(1, 2, 3, 4);
 		auto last_index = 1;
-		for (auto l = 1; l < level_ - 1; ++l)
+		for (auto l = 1; l < level_; ++l)
 		{
 			const auto num_nodes = num_nodes_at_level_[l];
 			const auto width = static_cast<int>(pow(2, l));
-			const auto next_width = static_cast<int>(pow(2, l+1));
+			const auto next_width = static_cast<int>(pow(2, l + 1));
 
 			for (int i = 0; i < num_nodes; ++i)
 			{
-				auto [x, y] = std::div(i, width);
+				auto [y, x] = std::div(i, width);
 
 				data_[last_index + i] = new tree_node(
 					x * 2 + y * 2 * next_width,
@@ -82,31 +82,6 @@ public:
 
 			last_index += num_nodes;
 		}
-
-		//data_[0] = new tree_node(1, 2, 3, 4);
-
-		//auto last_index = 1;
-		//for (auto l = 1; l < level_ - 1; ++l)
-		//{
-		//	const auto num_nodes = num_nodes_at_level_[l];
-		//	const auto width = static_cast<int>(pow(2, l));
-
-		//	for (int i = 0; i < num_nodes; ++i)
-		//	{
-		//		data_[last_index + i] = new tree_node(
-		//			//last_index + num_nodes + i * 4 + 0,
-		//			//last_index + num_nodes + i * 4 + 1,
-		//			//last_index + num_nodes + i * 4 + width,
-		//			//last_index + num_nodes + i * 4 + width + 1
-		//			i * 4 + 0,
-		//			i * 4 + 1,
-		//			i * 4 + width,
-		//			i * 4 + width + 1
-		//		);
-		//	}
-
-		//	last_index += num_nodes_at_level_[l];
-		//}
 	}
 
 	void debug_print(const bool real_index = false) const
@@ -114,7 +89,7 @@ public:
 		auto last_index = 0;
 
 
-		for (auto l = 0; l < level_ - 1; ++l)
+		for (auto l = 0; l < level_; ++l)
 		{
 			std::cout << "Level " << l << ':';
 
@@ -128,12 +103,11 @@ public:
 				}
 				if (real_index)
 				{
-					std::cout << last_index+i << ' ';
-
-				}else
+					std::cout << last_index + i << ' ';
+				}
+				else
 				{
 					std::cout << i << ' ';
-
 				}
 			}
 			last_index += num_nodes_at_level_[l];
