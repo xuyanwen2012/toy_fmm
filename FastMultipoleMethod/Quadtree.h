@@ -206,6 +206,15 @@ public:
 
 			last_index = n;
 		}
+
+		std::cout << "	- Operating on Root..." << std::endl;
+		std::cout << "		- 1 operation" << std::endl;
+		double sum = 0.0;
+		for (unsigned child : data_[0]->children)
+		{
+			sum += data_[child]->node_mass;
+		}
+		data_[0]->node_mass = sum;
 	}
 
 	using data_array_t = std::array<tree_node*, tree_helper::num_nodes_<Level>::value>;
