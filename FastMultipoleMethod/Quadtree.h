@@ -3,6 +3,9 @@
 #include <array>
 #include <iostream>
 #include <type_traits>
+#include <vector>
+
+#include "Body.h"
 
 namespace tree_helper
 {
@@ -32,26 +35,24 @@ struct tree_node
 {
 	using index_t = size_t;
 
-	std::array<index_t, 4> children;
+	std::array<index_t, 4> children{};
+	std::vector<body_ptr> contents{};
 
-	tree_node() = delete;
+	tree_node() = default;
 
 	tree_node(const index_t a, const index_t b, const index_t c, const index_t d) : children{a, b, c, d}
 	{
 	}
 };
 
-struct leaf_node
-{
-};
-
 template <std::size_t Level>
 class quadtree
 {
 	static_assert(Level <= 10, "Level should be less than 10.");
+	static_assert(Level > 0, "Level should be greater than 0.");
 
 public:
-	quadtree() : data_(), level_(Level)
+	quadtree() : data_(), levels_(Level)
 	{
 		//  Setup helper tables
 		for (std::size_t i = 0; i < Level; ++i)
@@ -59,10 +60,12 @@ public:
 			num_nodes_at_level_[i] = pow(4, i);
 		}
 
-		// Setup children tables
+		// Setup root
 		data_[0] = new tree_node(1, 2, 3, 4);
 		auto last_index = 1;
-		for (auto l = 1; l < level_; ++l)
+
+		// Setup tree nodes
+		for (auto l = last_index; l < levels_ - 1; ++l)
 		{
 			const auto num_nodes = num_nodes_at_level_[l];
 			const auto width = static_cast<int>(pow(2, l));
@@ -82,6 +85,26 @@ public:
 
 			last_index += num_nodes;
 		}
+
+		// the last layer should be leaf nodes
+		for (auto i = last_index; i < data_.size(); ++i)
+		{
+			data_[i] = new tree_node();
+		}
+	}
+
+	void allocate_node_for_particle(const body_ptr& particle)
+	{
+		const double width = pow(2, levels_ - 1);
+
+		const auto x = static_cast<size_t>(width * particle->x());
+		const auto y = static_cast<size_t>(width * particle->y());
+
+		const auto ptr_base = data_.size() - num_nodes_at_level_[levels_ - 1];
+
+		const auto index = ptr_base + static_cast<size_t>(x + y * width);
+		// std::cout<<index<<std::endl;
+		data_[index]->contents.push_back(particle);
 	}
 
 	void debug_print(const bool real_index = false) const
@@ -89,7 +112,7 @@ public:
 		auto last_index = 0;
 
 
-		for (auto l = 0; l < level_; ++l)
+		for (auto l = 0; l < levels_; ++l)
 		{
 			std::cout << "Level " << l << ':';
 
@@ -121,7 +144,7 @@ public:
 
 protected:
 	std::array<tree_node*, tree_helper::num_nodes_<Level>::value> data_;
-	std::size_t level_;
+	std::size_t levels_;
 
 private:
 	std::array<std::size_t, Level> num_nodes_at_level_;
