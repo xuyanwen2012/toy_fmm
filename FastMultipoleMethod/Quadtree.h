@@ -33,15 +33,20 @@ namespace tree_helper
 
 struct tree_node
 {
-	using index_t = size_t;
+	using index_t = unsigned;
 
+	index_t parent{};
 	std::array<index_t, 4> children{};
 	std::vector<body_ptr> contents{};
 	double node_mass{};
 
 	tree_node() = default;
 
-	tree_node(const index_t a, const index_t b, const index_t c, const index_t d) : children{a, b, c, d}
+	tree_node(const index_t parent,
+	          const index_t a,
+	          const index_t b,
+	          const index_t c,
+	          const index_t d) : parent(parent), children{a, b, c, d}
 	{
 	}
 
@@ -77,7 +82,7 @@ public:
 
 		// Setup root
 		std::cout << "	- Operating on Root..." << std::endl;
-		data_[0] = new tree_node(1, 2, 3, 4);
+		data_[0] = new tree_node(0, 1, 2, 3, 4);
 		auto last_index = 1;
 
 		// Setup tree nodes
@@ -95,6 +100,9 @@ public:
 				auto [y, x] = std::div(i, width);
 
 				data_[last_index + i] = new tree_node(
+					// TODO: Fix this.
+					0,
+					//x + y * width,
 					last_index + num_nodes + x * 2 + y * 2 * next_width,
 					last_index + num_nodes + x * 2 + y * 2 * next_width + 1,
 					last_index + num_nodes + x * 2 + (y * 2 + 1) * next_width,
@@ -223,6 +231,18 @@ protected:
 	data_array_t data_;
 	std::size_t levels_;
 
+	std::vector<unsigned> get_neighbors(unsigned level, unsigned local_index)
+	{
+		
+	}
+
 private:
 	std::array<std::size_t, Level> num_nodes_at_level_;
+
+	unsigned local_xy_to_index(unsigned level, unsigned x, unsigned y)
+	{
+		auto width = static_cast<unsigned>(pow(2, level));
+		return x + y * width;
+	}
 };
+
