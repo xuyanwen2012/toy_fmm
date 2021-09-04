@@ -84,6 +84,7 @@ public:
 		for (unsigned l = last_index; l < levels_ - 1; ++l)
 		{
 			std::cout << "	- Operating on level " << l << "..." << std::endl;
+			std::cout << "		- " << num_nodes_at_level_[l] << " operations" << std::endl;
 
 			const auto num_nodes = num_nodes_at_level_[l];
 			const auto width = static_cast<int>(pow(2, l));
@@ -106,6 +107,8 @@ public:
 
 		// the last layer should be leaf nodes
 		std::cout << "	- Operating on leaf " << levels_ - 1 << " level..." << std::endl;
+		std::cout << "		- " << data_.size() - last_index << " operations" << std::endl;
+
 		for (unsigned i = last_index; i < data_.size(); ++i)
 		{
 			data_[i] = new tree_node();
@@ -173,7 +176,8 @@ public:
 
 	void compute_com()
 	{
-		std::cout << "	- Operating on level " << levels_ - 1 << "(leafs)..." << std::endl;
+		std::cout << "	- Operating on level " << levels_ - 1 << " (leafs)..." << std::endl;
+		std::cout << "		- " << num_nodes_at_level_[levels_ - 1] << " operations" << std::endl;
 
 		// we start from the leaf nodes
 		auto n = data_.size() - 1 - num_nodes_at_level_[levels_ - 1];
@@ -183,9 +187,24 @@ public:
 			data_[i]->compute_contents_com();
 		}
 
-		for (unsigned l = levels_ - 2; l > 1; --l)
+		auto last_index = n;
+		for (unsigned l = levels_ - 2; l > 0; --l)
 		{
 			std::cout << "	- Operating on level " << l << "..." << std::endl;
+			std::cout << "		- " << num_nodes_at_level_[l] << " operations" << std::endl;
+
+			n = last_index - num_nodes_at_level_[l];
+			for (unsigned i = last_index; i > n; --i)
+			{
+				double sum = 0.0;
+				for (unsigned child : data_[i]->children)
+				{
+					sum += data_[child]->node_mass;
+				}
+				data_[i]->node_mass = sum;
+			}
+
+			last_index = n;
 		}
 	}
 
