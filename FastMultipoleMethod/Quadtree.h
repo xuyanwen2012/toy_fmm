@@ -2,6 +2,7 @@
 
 #include <array>
 #include <iostream>
+#include <numeric>
 #include <type_traits>
 #include <vector>
 
@@ -30,20 +31,31 @@ namespace tree_helper
 	using num_nodes_ = std::integral_constant<std::size_t, num_nodes(Level - 1)>;
 }
 
-
 struct tree_node
 {
 	using index_t = size_t;
 
 	std::array<index_t, 4> children{};
 	std::vector<body_ptr> contents{};
+	double node_mass{};
 
 	tree_node() = default;
 
 	tree_node(const index_t a, const index_t b, const index_t c, const index_t d) : children{a, b, c, d}
 	{
 	}
+
+	void compute_contents_com()
+	{
+		static auto sum = [&](const double acc, const body_ptr& ptr)
+		{
+			return acc + ptr->mass;
+		};
+
+		node_mass = std::accumulate(contents.begin(), contents.end(), 0.0, sum);
+	}
 };
+
 
 template <std::size_t Level>
 class quadtree
@@ -52,21 +64,27 @@ class quadtree
 	static_assert(Level > 0, "Level should be greater than 0.");
 
 public:
+	/// <summary>
+	/// 
+	/// </summary>
 	quadtree() : data_(), levels_(Level)
 	{
 		//  Setup helper tables
-		for (std::size_t i = 0; i < Level; ++i)
+		for (unsigned i = 0; i < Level; ++i)
 		{
 			num_nodes_at_level_[i] = pow(4, i);
 		}
 
 		// Setup root
+		std::cout << "	- Operating on Root..." << std::endl;
 		data_[0] = new tree_node(1, 2, 3, 4);
 		auto last_index = 1;
 
 		// Setup tree nodes
-		for (auto l = last_index; l < levels_ - 1; ++l)
+		for (unsigned l = last_index; l < levels_ - 1; ++l)
 		{
+			std::cout << "	- Operating on level " << l << "..." << std::endl;
+
 			const auto num_nodes = num_nodes_at_level_[l];
 			const auto width = static_cast<int>(pow(2, l));
 			const auto next_width = static_cast<int>(pow(2, l + 1));
@@ -87,12 +105,17 @@ public:
 		}
 
 		// the last layer should be leaf nodes
-		for (auto i = last_index; i < data_.size(); ++i)
+		std::cout << "	- Operating on leaf " << levels_ - 1 << " level..." << std::endl;
+		for (unsigned i = last_index; i < data_.size(); ++i)
 		{
 			data_[i] = new tree_node();
 		}
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="particle"></param>
 	void allocate_node_for_particle(const body_ptr& particle)
 	{
 		const double width = pow(2, levels_ - 1);
@@ -103,10 +126,13 @@ public:
 		const auto ptr_base = data_.size() - num_nodes_at_level_[levels_ - 1];
 
 		const auto index = ptr_base + static_cast<size_t>(x + y * width);
-		// std::cout<<index<<std::endl;
 		data_[index]->contents.push_back(particle);
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="real_index"></param>
 	void debug_print(const bool real_index = false) const
 	{
 		auto last_index = 0;
@@ -140,10 +166,33 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
 	void clear() { data_.fill(nullptr); }
 
+	void compute_com()
+	{
+		std::cout << "	- Operating on level " << levels_ - 1 << "(leafs)..." << std::endl;
+
+		// we start from the leaf nodes
+		auto n = data_.size() - 1 - num_nodes_at_level_[levels_ - 1];
+
+		for (unsigned i = data_.size() - 1; i > n; --i)
+		{
+			data_[i]->compute_contents_com();
+		}
+
+		for (unsigned l = levels_ - 2; l > 1; --l)
+		{
+			std::cout << "	- Operating on level " << l << "..." << std::endl;
+		}
+	}
+
+	using data_array_t = std::array<tree_node*, tree_helper::num_nodes_<Level>::value>;
+
 protected:
-	std::array<tree_node*, tree_helper::num_nodes_<Level>::value> data_;
+	data_array_t data_;
 	std::size_t levels_;
 
 private:

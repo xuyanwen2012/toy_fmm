@@ -36,6 +36,10 @@ int main()
 		bodies.push_back(std::make_shared<body<double>>(i, pos, mass));
 	}
 
+	// Step 1) build the quadtree 
+
+	std::cout << "Start building the tree..." << std::endl;
+
 	auto qt = quadtree<5>();
 
 	for (const auto& body : bodies)
@@ -43,7 +47,14 @@ int main()
 		qt.allocate_node_for_particle(body);
 	}
 
-	//qt.debug_print(true);
+	std::cout << "Finished building the tree..." << std::endl;
+
+	// Step 2) compute center of mass
+	std::cout << "Starting computing COM..." << std::endl;
+
+	qt.compute_com();
+
+	std::cout << "Finished computing COM..." << std::endl;
 
 	return EXIT_SUCCESS;
 }
