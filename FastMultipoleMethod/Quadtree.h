@@ -107,14 +107,14 @@ public:
 		auto last_index = 0;
 
 
-		for (auto l = 0; l < max_levels_; ++l)
+		for (size_t l = 0; l < max_levels_; ++l)
 		{
 			std::cout << "Level " << l << ':';
 
 			const auto width = static_cast<int>(pow(2, l));
 
 			auto n = level_index_range_[l].second;
-			for (int i = 0; i < n; ++i)
+			for (size_t i = 0; i < n; ++i)
 			{
 				if (i % width == 0)
 				{
