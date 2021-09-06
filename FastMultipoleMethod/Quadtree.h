@@ -254,21 +254,24 @@ protected:
 			const auto [next_level_start_i, _] = level_index_range_[l + 1];
 			for (unsigned i = 0; i < n; ++i)
 			{
-				const auto parent_neighbors_children = get_all_neighbors_children(l, start_i, i);
+				auto parent_neighbors_children = get_all_neighbors_children(l, start_i, i);
 
 				for (const unsigned child_i : data_[start_i + i]->children)
 				{
-					std::vector<unsigned> self_neighbor = get_neighbors(l + 1, child_i - next_level_start_i);
-					//
+					std::vector<unsigned> self_neighbor = get_neighbors(l + 1, next_level_start_i,
+					                                                    child_i - next_level_start_i);
+					std::sort(self_neighbor.begin(), self_neighbor.end());
+
 					std::vector<unsigned> diff;
 					diff.reserve(27);
+
 					std::set_difference(
 						parent_neighbors_children.begin(), parent_neighbors_children.end(),
 						self_neighbor.begin(), self_neighbor.end(),
 						std::inserter(diff, diff.begin())
 					);
 
-					data_[start_i + i]->interaction_list = std::move(diff);
+					data_[child_i]->interaction_list = std::move(diff);
 				}
 
 
@@ -289,9 +292,11 @@ public:
 	/// 
 	/// </summary>
 	/// <param name="level"></param>
+	/// <param name="start_i"></param>
 	/// <param name="local_index"></param>
 	/// <returns>A list of the local indices of the neighbors. </returns>
-	[[nodiscard]] std::vector<index_t> get_neighbors(const size_t level, const unsigned local_index) const
+	[[nodiscard]] std::vector<index_t> get_neighbors(const size_t level, const unsigned start_i,
+	                                                 const unsigned local_index) const
 	{
 		const auto width = static_cast<int>(pow(2, level));
 		const auto y = local_index / width;
@@ -317,7 +322,7 @@ public:
 					continue;
 				}
 
-				neighbors.push_back(new_x + new_y * width);
+				neighbors.push_back(start_i + new_x + new_y * width);
 			}
 		}
 
@@ -335,19 +340,21 @@ public:
 	                                                              const unsigned local_index) const
 	{
 		std::vector<unsigned> potential_interaction_list;
-		std::cout << l << ": " << std::endl;
-		for (const unsigned neighbor_i : get_neighbors(l, local_index))
+		//std::cout << l << ": " << std::endl;
+		for (const unsigned neighbor_i : get_neighbors(l, start_i, local_index))
 		{
-			std::cout << neighbor_i << ' ';
+			//std::cout << neighbor_i << ' ';
 
-			const tree_node* neighbor_ptr = data_[start_i + neighbor_i];
+			const tree_node* neighbor_ptr = data_[neighbor_i];
 			for (const unsigned child : neighbor_ptr->children)
 			{
 				potential_interaction_list.push_back(child);
 			}
 		}
 
-		std::cout << std::endl;
+		//std::cout << std::endl;
+
+		std::sort(potential_interaction_list.begin(), potential_interaction_list.end()); 
 		return potential_interaction_list;
 	}
 };
