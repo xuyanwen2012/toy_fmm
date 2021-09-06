@@ -50,6 +50,10 @@ struct tree_node
 	{
 	}
 
+	/// <summary>
+	/// On leaf nodes we should simply compute the sum of all the masses of
+	/// particles in this node. 
+	/// </summary>
 	void compute_contents_com()
 	{
 		static auto sum = [&](const double acc, const body_ptr& ptr)
@@ -86,13 +90,11 @@ public:
 		iter end() { return e; }
 	};
 
-	/// <summary>
-	/// 
-	/// </summary>
 	constexpr quadtree() : data_(), max_levels_(Level)
 	{
 		setup_helpers();
 		setup_children_table();
+		setup_interaction_list();
 	}
 
 	range boxes_at_level(size_t l)
@@ -136,7 +138,6 @@ public:
 		}
 	}
 
-
 	/// <summary>
 	/// 
 	/// </summary>
@@ -168,9 +169,12 @@ public:
 		constexpr unsigned offset = 1; // I need this offset to bypass unsigned loop
 		for (unsigned l = max_levels_ - 2 + offset; l >= 0 + offset; --l)
 		{
+			std::cout << "	- Operating on level " << l - offset << "..." << std::endl;
+			std::cout << "		- " << level_index_range_[l - offset].second << " operations" << std::endl;
+
 			for (tree_node* node: boxes_at_level(l - offset))
 			{
-				// dum way to compute sum of 
+				// dum way to compute the sum of 
 				double sum = 0.0;
 				for (unsigned child : node->children)
 				{
@@ -179,8 +183,6 @@ public:
 				node->node_mass = sum;
 			}
 		}
-
-
 	}
 
 protected:
@@ -197,7 +199,9 @@ protected:
 
 	void setup_children_table()
 	{
-		std::cout << "	- Operating on Root..." << std::endl;
+		std::cout << "	- Operating on Level 0 (Root)..." << std::endl;
+		std::cout << "		- 1 operation" << std::endl;
+
 		data_[0] = new tree_node(0, 1, 2, 3, 4);
 
 		for (size_t l = 1; l < max_levels_ - 1; ++l)
@@ -238,9 +242,53 @@ protected:
 	}
 
 
+	void setup_interaction_list()
+	{
+		
+	}
+
+
 private:
 	data_array_t data_;
 	std::size_t max_levels_;
 
 	std::array<std::pair<index_t, index_t>, Level> level_index_range_;
+
+public:
+	[[nodiscard]] std::vector<index_t> get_neighbors(const size_t level, const unsigned local_index) const
+	{
+		const auto width = static_cast<int>(pow(2, level));
+		const auto y = local_index / width;
+		const auto x = local_index % width;
+
+		std::vector<index_t> neighbors;
+		neighbors.reserve(8);
+
+		for (int i = -1; i <= 1; ++i)
+		{
+			for (int j = -1; j <= 1; ++j)
+			{
+				if (i == 0 && j == 0)
+				{
+					continue;
+				}
+
+				const int new_x = x + i;
+				const int new_y = y + j;
+
+				if (new_x < 0 || new_x >= width)
+				{
+					continue;
+				}
+				if (new_y < 0 || new_y >= width)
+				{
+					continue;
+				}
+
+				neighbors.push_back(new_x + new_y * width);
+			}
+		}
+
+		return neighbors;
+	}
 };

@@ -41,17 +41,7 @@ int main()
 	std::cout << "Start building the tree..." << std::endl;
 	auto qt = quadtree<5>();
 
-	for (int l = 0; l < 5; ++l)
-	{
-		std::cout << l << ": " << std::endl;
-		for (const auto node : qt.boxes_at_level(l))
-		{
-			std::cout << node->uid << ' ';
-		}
-		std::cout << std::endl;
-	}
-
-	qt.debug_print(true);
+	qt.debug_print();
 
 	std::cout << "	- Inserting nodes..." << std::endl;
 	std::for_each(bodies.begin(), bodies.end(), [&](const auto& body)
@@ -67,6 +57,12 @@ int main()
 	qt.compute_com();
 
 	std::cout << "Finished computing COM..." << std::endl;
+
+
+	for (const auto body : qt.get_neighbors(2, 10))
+	{
+		std::cout << body << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 }
