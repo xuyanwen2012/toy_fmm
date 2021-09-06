@@ -250,7 +250,7 @@ public:
 		}
 
 		// then distribute the leaf nodes;
-		for (tree_node* leaf_nodes: boxes_at_level(max_levels_ - 1))
+		for (tree_node* leaf_nodes : boxes_at_level(max_levels_ - 1))
 		{
 			leaf_nodes->distribute_u();
 		}
