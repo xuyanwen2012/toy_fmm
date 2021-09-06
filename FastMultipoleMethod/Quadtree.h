@@ -161,7 +161,7 @@ public:
 		std::cout << "		- " << level_index_range_[max_levels_ - 1].second << " operations" << std::endl;
 
 		// we start from the leaf nodes
-		for (tree_node* node: boxes_at_level(max_levels_ - 1))
+		for (tree_node* node : boxes_at_level(max_levels_ - 1))
 		{
 			node->compute_contents_com();
 		}
@@ -172,7 +172,7 @@ public:
 			std::cout << "	- Operating on level " << l - offset << "..." << std::endl;
 			std::cout << "		- " << level_index_range_[l - offset].second << " operations" << std::endl;
 
-			for (tree_node* node: boxes_at_level(l - offset))
+			for (tree_node* node : boxes_at_level(l - offset))
 			{
 				// dum way to compute the sum of 
 				double sum = 0.0;
@@ -244,7 +244,6 @@ protected:
 
 	void setup_interaction_list()
 	{
-		
 	}
 
 
@@ -273,8 +272,8 @@ public:
 					continue;
 				}
 
-				const int new_x = x + i;
-				const int new_y = y + j;
+				const int new_x = static_cast<int>(x) + i;
+				const int new_y = static_cast<int>(y) + j;
 
 				if (new_x < 0 || new_x >= width)
 				{
