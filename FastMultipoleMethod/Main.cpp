@@ -36,7 +36,7 @@ int main()
 		bodies.push_back(std::make_shared<body<double>>(i, pos, mass));
 	}
 
-	// Step 1) build the quadtree 
+	// Step 0) build the quadtree 
 
 	std::cout << "Start building the tree..." << std::endl;
 	auto qt = quadtree<5>();
@@ -51,19 +51,29 @@ int main()
 
 	std::cout << "Finished building the tree..." << std::endl;
 
-	// Step 2) compute center of mass
+	// Step 1) compute center of mass
 	std::cout << "Starting computing COM..." << std::endl;
 
 	qt.compute_com();
 
 	std::cout << "Finished computing COM..." << std::endl;
 
-	// Step 3) Compute multipoles
+	// Step 2) Compute multipoles
 	std::cout << "Starting computing multipoles..." << std::endl;
 
 	qt.compute_u();
 
 	std::cout << "Finished computing multipoles..." << std::endl;
+
+	// Step 3) Downward pass
+	std::cout << "Starting downward pass..." << std::endl;
+	qt.downward_pass();
+	std::cout << "Finished downward pass..." << std::endl;
+
+	//for (const auto& body : bodies)
+	//{
+	//	std::cout << body->u << std::endl;
+	//}
 
 	return EXIT_SUCCESS;
 }

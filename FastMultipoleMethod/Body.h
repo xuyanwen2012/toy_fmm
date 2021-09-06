@@ -7,13 +7,14 @@ template <typename T,
 struct body
 {
 	body(const int uid, const std::complex<T> pos, const double mass)
-		: uid(uid), pos(pos), mass(mass)
+		: uid(uid), pos(pos), mass(mass), u()
 	{
 	}
 
 	int uid;
 	std::complex<T> pos;
 	T mass;
+	std::complex<T> u;
 
 	T x() { return pos.real(); }
 	T y() { return pos.imag(); }

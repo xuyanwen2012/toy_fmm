@@ -67,6 +67,17 @@ struct tree_node
 
 		node_mass = std::accumulate(contents.begin(), contents.end(), 0.0, sum);
 	}
+
+	/// <summary>
+	/// Should only be called on the leaf_nodes
+	/// </summary>
+	void distribute_u()
+	{
+		std::for_each(contents.begin(), contents.end(), [&](const body_ptr& particle)
+		{
+			particle->u += u;
+		});
+	}
 };
 
 
@@ -214,13 +225,34 @@ public:
 	{
 		for (size_t l = 2; l < max_levels_; ++l)
 		{
-			for (tree_node* box : boxes_at_level(l))
+			for (const tree_node* box : boxes_at_level(l)) // O(N)
 			{
-				for (unsigned other : box->interaction_list)
+				for (unsigned other : box->interaction_list) // O(27)
 				{
 					data_[other]->u += kernel_func(data_[other]->node_center, box->node_center) * box->node_mass;
 				}
 			}
+		}
+	}
+
+	void downward_pass()
+	{
+		// we start from top.
+		for (size_t l = 2; l < max_levels_; ++l)
+		{
+			for (const tree_node* box : boxes_at_level(l))
+			{
+				for (unsigned child : box->children)
+				{
+					data_[child]->u += box->u;
+				}
+			}
+		}
+
+		// then distribute the leaf nodes;
+		for (tree_node* leaf_nodes: boxes_at_level(max_levels_ - 1))
+		{
+			leaf_nodes->distribute_u();
 		}
 	}
 
