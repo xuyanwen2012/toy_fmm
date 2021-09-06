@@ -40,29 +40,22 @@ int main()
 
 	std::cout << "Start building the tree..." << std::endl;
 	auto qt = quadtree<5>();
-
 	qt.debug_print();
-
 	std::cout << "	- Inserting nodes..." << std::endl;
 	std::for_each(bodies.begin(), bodies.end(), [&](const auto& body)
 	{
 		qt.allocate_node_for_particle(body);
 	});
-
 	std::cout << "Finished building the tree..." << std::endl;
 
 	// Step 1) compute center of mass
 	std::cout << "Starting computing COM..." << std::endl;
-
 	qt.compute_com();
-
 	std::cout << "Finished computing COM..." << std::endl;
 
 	// Step 2) Compute multipoles
 	std::cout << "Starting computing multipoles..." << std::endl;
-
 	qt.compute_u();
-
 	std::cout << "Finished computing multipoles..." << std::endl;
 
 	// Step 3) Downward pass
@@ -70,10 +63,10 @@ int main()
 	qt.downward_pass();
 	std::cout << "Finished downward pass..." << std::endl;
 
-	//for (const auto& body : bodies)
-	//{
-	//	std::cout << body->u << std::endl;
-	//}
+	// Step 4) Summing up with local direct N^2 neighbors.
+	std::cout << "Starting summation..." << std::endl;
+	qt.sum_direct_computation();
+	std::cout << "Finished summation..." << std::endl;
 
 	return EXIT_SUCCESS;
 }

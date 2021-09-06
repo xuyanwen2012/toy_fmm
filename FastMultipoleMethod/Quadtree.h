@@ -78,6 +78,14 @@ struct tree_node
 			particle->u += u;
 		});
 	}
+
+	//void direct_compute_neighbor(const std::vector<unsigned>& neighbors)
+	//{
+	//	for (const unsigned neighbor : neighbors)
+	//	{
+	//		
+	//	}
+	//}
 };
 
 
@@ -253,6 +261,44 @@ public:
 		for (tree_node* leaf_nodes : boxes_at_level(max_levels_ - 1))
 		{
 			leaf_nodes->distribute_u();
+		}
+	}
+
+	void sum_direct_computation()
+	{
+		const auto last_level = max_levels_-1;
+		const auto [start_i, n] = level_index_range_[last_level];
+
+		for (unsigned i = 0; i < n; ++i)
+		{
+			std::vector<body_ptr> local_region;
+
+			for (unsigned neighbor : get_neighbors(last_level, start_i, i))
+			{
+				for (const auto& p: data_[neighbor]->contents)
+				{
+					local_region.push_back(p);
+				}
+			}
+
+			const tree_node* cur = data_[start_i + i];
+			local_region.insert(local_region.end(), cur->contents.begin(), cur->contents.end());
+
+			// Do the N^2 algorithm for local region.
+			//pow(1, 1);
+			for (const body_ptr& body_p: local_region)
+			{
+				for (const body_ptr& body_q : local_region)
+				{
+					if (body_p->uid == body_q->uid)
+					{
+						continue;
+					}
+
+					body_p->u += kernel_func(body_p->pos, body_q->pos) * body_p->mass;
+				}
+			}
+
 		}
 	}
 
