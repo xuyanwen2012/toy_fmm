@@ -38,6 +38,7 @@ struct tree_node
 	unsigned uid{};
 	std::array<index_t, 4> children{};
 	std::vector<body_ptr> contents{};
+	std::vector<index_t> interaction_list{};
 	double node_mass{};
 
 	tree_node() = default;
@@ -244,35 +245,36 @@ protected:
 
 	void setup_interaction_list()
 	{
-		//// No interaction lists for level 0 and 1, so we starting from level 2.
-		//// But we will do the for-loop on the parent level. (-1 level)
-		//for (size_t l = 1; l < max_levels_ - 1; ++l)
-		//{
-		//	// For each parent
-		//	const auto [start_i, n] = level_index_range_[l];
-		//	std::vector<unsigned> potential_interaction_list;
+		// No interaction lists for level 0 and 1, so we starting from level 2.
+		// But we will do the for-loop on the parent level. (-1 level)
+		for (size_t l = 1; l < max_levels_ - 1; ++l)
+		{
+			// For each parent
+			const auto [start_i, n] = level_index_range_[l];
+			const auto [next_level_start_i, _] = level_index_range_[l + 1];
+			for (unsigned i = 0; i < n; ++i)
+			{
+				const auto parent_neighbors_children = get_all_neighbors_children(l, start_i, i);
 
-		//	for (unsigned p_local_i = 0; p_local_i < n; ++p_local_i)
-		//	{
-		//		const auto parent_neighbors = get_neighbors(l, p_local_i);
-		//		for (unsigned p_neighbor_i : parent_neighbors)
-		//		{
-		//			const tree_node* p_neighbor = data_[start_i + p_neighbor_i];
+				for (const unsigned child_i : data_[start_i + i]->children)
+				{
+					std::vector<unsigned> self_neighbor = get_neighbors(l + 1, child_i - next_level_start_i);
+					//
+					std::vector<unsigned> diff;
+					diff.reserve(27);
+					std::set_difference(
+						parent_neighbors_children.begin(), parent_neighbors_children.end(),
+						self_neighbor.begin(), self_neighbor.end(),
+						std::inserter(diff, diff.begin())
+					);
 
-		//			for (const unsigned child : p_neighbor->children)
-		//			{
-		//				potential_interaction_list.push_back(child);
-		//			}
-		//		}
-		//	}
+					data_[start_i + i]->interaction_list = std::move(diff);
+				}
 
-		//	for (unsigned interaction_list : potential_interaction_list)
-		//	{
-		//		
-		//	}
 
-		//	std::cout << ;
-		//}
+				std::vector<unsigned> diff;
+			}
+		}
 	}
 
 
@@ -283,6 +285,12 @@ private:
 	std::array<std::pair<index_t, index_t>, Level> level_index_range_;
 
 public:
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="level"></param>
+	/// <param name="local_index"></param>
+	/// <returns>A list of the local indices of the neighbors. </returns>
 	[[nodiscard]] std::vector<index_t> get_neighbors(const size_t level, const unsigned local_index) const
 	{
 		const auto width = static_cast<int>(pow(2, level));
@@ -316,7 +324,15 @@ public:
 		return neighbors;
 	}
 
-	[[nodiscard]] std::vector<index_t> get_all_neighbors_children(const size_t l, const unsigned start_i, const unsigned local_index) const
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="l"></param>
+	/// <param name="start_i"></param>
+	/// <param name="local_index"></param>
+	/// <returns> A list of the absolute indices of the neighbors' children. </returns>
+	[[nodiscard]] std::vector<index_t> get_all_neighbors_children(const size_t l, const unsigned start_i,
+	                                                              const unsigned local_index) const
 	{
 		std::vector<unsigned> potential_interaction_list;
 		std::cout << l << ": " << std::endl;
