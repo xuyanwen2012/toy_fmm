@@ -78,14 +78,6 @@ struct tree_node
 			particle->u += u;
 		});
 	}
-
-	//void direct_compute_neighbor(const std::vector<unsigned>& neighbors)
-	//{
-	//	for (const unsigned neighbor : neighbors)
-	//	{
-	//		
-	//	}
-	//}
 };
 
 
@@ -266,7 +258,7 @@ public:
 
 	void sum_direct_computation()
 	{
-		const auto last_level = max_levels_-1;
+		const auto last_level = max_levels_ - 1;
 		const auto [start_i, n] = level_index_range_[last_level];
 
 		for (unsigned i = 0; i < n; ++i)
@@ -275,7 +267,7 @@ public:
 
 			for (unsigned neighbor : get_neighbors(last_level, start_i, i))
 			{
-				for (const auto& p: data_[neighbor]->contents)
+				for (const auto& p : data_[neighbor]->contents)
 				{
 					local_region.push_back(p);
 				}
@@ -286,7 +278,7 @@ public:
 
 			// Do the N^2 algorithm for local region.
 			//pow(1, 1);
-			for (const body_ptr& body_p: local_region)
+			for (const body_ptr& body_p : local_region)
 			{
 				for (const body_ptr& body_q : local_region)
 				{
@@ -298,7 +290,6 @@ public:
 					body_p->u += kernel_func(body_p->pos, body_q->pos) * body_p->mass;
 				}
 			}
-
 		}
 	}
 
@@ -456,19 +447,14 @@ public:
 	                                                              const unsigned local_index) const
 	{
 		std::vector<unsigned> potential_interaction_list;
-		//std::cout << l << ": " << std::endl;
 		for (const unsigned neighbor_i : get_neighbors(l, start_i, local_index))
 		{
-			//std::cout << neighbor_i << ' ';
-
 			const tree_node* neighbor_ptr = data_[neighbor_i];
 			for (const unsigned child : neighbor_ptr->children)
 			{
 				potential_interaction_list.push_back(child);
 			}
 		}
-
-		//std::cout << std::endl;
 
 		std::sort(potential_interaction_list.begin(), potential_interaction_list.end());
 		return potential_interaction_list;

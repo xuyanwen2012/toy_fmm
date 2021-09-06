@@ -22,8 +22,31 @@ double my_rand(const double f_min = 0.0, const double f_max = 1.0)
 }
 #endif
 
+std::vector<std::complex<double>> compute_ground_truth(const std::vector<body_ptr>& bodies)
+{
+	std::vector<std::complex<double>> us(bodies.size());
+
+	for (const body_ptr& body_p : bodies)
+	{
+		for (const body_ptr& body_q : bodies)
+		{
+			if (body_p->uid == body_q->uid)
+			{
+				continue;
+			}
+
+			us[body_p->uid] += kernel_func(body_p->pos, body_q->pos) * body_p->mass;
+		}
+	}
+
+	return us;
+}
+
+
 int main()
 {
+	static constexpr bool show_rmse = true;
+
 	// Initialization of positions/masses
 	constexpr size_t num_bodies = 1024;
 	std::vector<body_ptr> bodies;
@@ -67,6 +90,17 @@ int main()
 	std::cout << "Starting summation..." << std::endl;
 	qt.sum_direct_computation();
 	std::cout << "Finished summation..." << std::endl;
+
+	if constexpr (show_rmse)
+	{
+		const auto ground_truth = compute_ground_truth(bodies);
+
+		for (unsigned i = 0; i < num_bodies; ++i)
+		{
+			std::cout << ground_truth[i].real() << " --- " << bodies[i]->u.real() << std::endl;
+		}
+
+	}
 
 	return EXIT_SUCCESS;
 }
