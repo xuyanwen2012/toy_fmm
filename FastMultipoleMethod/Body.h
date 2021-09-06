@@ -26,8 +26,8 @@ using body_ptr = std::shared_ptr<body<double>>;
 ///	particles. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-/// <param name="i">The first particle.</param>
-/// <param name="j">The second particle.</param>
+/// <param name="i">The first position.</param>
+/// <param name="j">The second position.</param>
 /// <returns>The force.</returns>
 template <typename T,
           typename = std::enable_if_t<std::is_floating_point_v<T>, T>>

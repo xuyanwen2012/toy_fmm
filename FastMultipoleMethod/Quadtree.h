@@ -40,6 +40,7 @@ struct tree_node
 	std::vector<body_ptr> contents{};
 	std::vector<index_t> interaction_list{};
 
+	std::complex<double> u{};
 	double node_mass{};
 	std::complex<double> node_center{}; // could be center of mass, or center of the box?
 
@@ -200,13 +201,26 @@ public:
 				const auto y = i / width;
 				const auto x = i % width;
 
-				data_[start_i+i]->node_center =
+				data_[start_i + i]->node_center =
 				{
 					x * c + c / 2.0,
 					y * c + c / 2.0,
 				};
 			}
+		}
+	}
 
+	void compute_u()
+	{
+		for (size_t l = 2; l < max_levels_; ++l)
+		{
+			for (tree_node* box : boxes_at_level(l))
+			{
+				for (unsigned other : box->interaction_list)
+				{
+					data_[other]->u += kernel_func(data_[other]->node_center, box->node_center) * box->node_mass;
+				}
+			}
 		}
 	}
 
@@ -378,7 +392,7 @@ public:
 
 		//std::cout << std::endl;
 
-		std::sort(potential_interaction_list.begin(), potential_interaction_list.end()); 
+		std::sort(potential_interaction_list.begin(), potential_interaction_list.end());
 		return potential_interaction_list;
 	}
 };

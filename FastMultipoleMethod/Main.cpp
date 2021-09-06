@@ -58,6 +58,12 @@ int main()
 
 	std::cout << "Finished computing COM..." << std::endl;
 
+	// Step 3) Compute multipoles
+	std::cout << "Starting computing multipoles..." << std::endl;
+
+	qt.compute_u();
+
+	std::cout << "Finished computing multipoles..." << std::endl;
 
 	return EXIT_SUCCESS;
 }
