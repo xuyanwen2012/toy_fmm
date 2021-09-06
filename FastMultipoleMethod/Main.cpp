@@ -59,10 +59,12 @@ int main()
 	std::cout << "Finished computing COM..." << std::endl;
 
 
-	for (const auto body : qt.get_neighbors(2, 10))
-	{
-		std::cout << body << std::endl;
-	}
+	//auto arr = qt.get_all_neighbors_children(2, 5, 9);
+	//std::sort(arr.begin(), arr.end());
+	//for (const auto body : arr)
+	//{
+	//	std::cout << body << std::endl;
+	//}
 
 	return EXIT_SUCCESS;
 }

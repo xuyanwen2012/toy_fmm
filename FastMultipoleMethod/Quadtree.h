@@ -244,6 +244,35 @@ protected:
 
 	void setup_interaction_list()
 	{
+		//// No interaction lists for level 0 and 1, so we starting from level 2.
+		//// But we will do the for-loop on the parent level. (-1 level)
+		//for (size_t l = 1; l < max_levels_ - 1; ++l)
+		//{
+		//	// For each parent
+		//	const auto [start_i, n] = level_index_range_[l];
+		//	std::vector<unsigned> potential_interaction_list;
+
+		//	for (unsigned p_local_i = 0; p_local_i < n; ++p_local_i)
+		//	{
+		//		const auto parent_neighbors = get_neighbors(l, p_local_i);
+		//		for (unsigned p_neighbor_i : parent_neighbors)
+		//		{
+		//			const tree_node* p_neighbor = data_[start_i + p_neighbor_i];
+
+		//			for (const unsigned child : p_neighbor->children)
+		//			{
+		//				potential_interaction_list.push_back(child);
+		//			}
+		//		}
+		//	}
+
+		//	for (unsigned interaction_list : potential_interaction_list)
+		//	{
+		//		
+		//	}
+
+		//	std::cout << ;
+		//}
 	}
 
 
@@ -275,11 +304,7 @@ public:
 				const int new_x = static_cast<int>(x) + i;
 				const int new_y = static_cast<int>(y) + j;
 
-				if (new_x < 0 || new_x >= width)
-				{
-					continue;
-				}
-				if (new_y < 0 || new_y >= width)
+				if (new_x < 0 || new_x >= width || new_y < 0 || new_y >= width)
 				{
 					continue;
 				}
@@ -289,5 +314,24 @@ public:
 		}
 
 		return neighbors;
+	}
+
+	[[nodiscard]] std::vector<index_t> get_all_neighbors_children(const size_t l, const unsigned start_i, const unsigned local_index) const
+	{
+		std::vector<unsigned> potential_interaction_list;
+		std::cout << l << ": " << std::endl;
+		for (const unsigned neighbor_i : get_neighbors(l, local_index))
+		{
+			std::cout << neighbor_i << ' ';
+
+			const tree_node* neighbor_ptr = data_[start_i + neighbor_i];
+			for (const unsigned child : neighbor_ptr->children)
+			{
+				potential_interaction_list.push_back(child);
+			}
+		}
+
+		std::cout << std::endl;
+		return potential_interaction_list;
 	}
 };
