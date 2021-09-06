@@ -39,7 +39,9 @@ struct tree_node
 	std::array<index_t, 4> children{};
 	std::vector<body_ptr> contents{};
 	std::vector<index_t> interaction_list{};
+
 	double node_mass{};
+	std::complex<double> node_center{}; // could be center of mass, or center of the box?
 
 	tree_node() = default;
 
@@ -167,8 +169,8 @@ public:
 			node->compute_contents_com();
 		}
 
-		constexpr unsigned offset = 1; // I need this offset to bypass unsigned loop
-		for (unsigned l = max_levels_ - 2 + offset; l >= 0 + offset; --l)
+		constexpr size_t offset = 1; // I need this offset to bypass unsigned loop
+		for (size_t l = max_levels_ - 2 + offset; l >= 0 + offset; --l)
 		{
 			std::cout << "	- Operating on level " << l - offset << "..." << std::endl;
 			std::cout << "		- " << level_index_range_[l - offset].second << " operations" << std::endl;
@@ -183,6 +185,28 @@ public:
 				}
 				node->node_mass = sum;
 			}
+		}
+
+		// setup the box center(or center of mass)
+		data_[0]->node_center = {0.5, 0.5};
+		for (size_t l = 1; l < max_levels_; ++l)
+		{
+			const auto width = static_cast<unsigned>(pow(2, l));
+			const double c = 1.0 / static_cast<double>(width);
+
+			const auto [start_i, n] = level_index_range_[l];
+			for (unsigned i = 0; i < n; ++i)
+			{
+				const auto y = i / width;
+				const auto x = i % width;
+
+				data_[start_i+i]->node_center =
+				{
+					x * c + c / 2.0,
+					y * c + c / 2.0,
+				};
+			}
+
 		}
 	}
 
