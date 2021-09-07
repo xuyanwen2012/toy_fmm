@@ -51,9 +51,24 @@ int main()
 	constexpr size_t num_bodies = 1024;
 	std::vector<body_ptr> bodies;
 
-	for (size_t i = 0; i < num_bodies; ++i)
+	for (unsigned i = 0; i < num_bodies; ++i)
 	{
-		const auto& pos = std::complex<double>{my_rand(), my_rand()};
+		//const auto& pos = std::complex<double>{my_rand(), my_rand()};
+		//const auto& mass = my_rand() * 1.5;
+
+		const auto width = static_cast<unsigned>(pow(2, 5));
+		const double c = 1.0 / static_cast<double>(width);
+
+		const auto y = i / width;
+		const auto x = i % width;
+
+
+		const auto& pos = std::complex<double>{
+			x * c + c / 2.0,
+			y * c + c / 2.0,
+		};
+
+
 		const auto& mass = my_rand() * 1.5;
 
 		bodies.push_back(std::make_shared<body<double>>(i, pos, mass));
@@ -99,7 +114,6 @@ int main()
 		{
 			std::cout << ground_truth[i].real() << " --- " << bodies[i]->u.real() << std::endl;
 		}
-
 	}
 
 	return EXIT_SUCCESS;
