@@ -69,7 +69,7 @@ int main()
 		};
 
 
-		const auto& mass = my_rand() * 1.5;
+		const auto& mass = 1.0;
 
 		bodies.push_back(std::make_shared<body<double>>(i, pos, mass));
 	}

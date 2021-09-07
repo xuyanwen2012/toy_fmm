@@ -209,8 +209,8 @@ public:
 			const auto [start_i, n] = level_index_range_[l];
 			for (unsigned i = 0; i < n; ++i)
 			{
-				const auto y = i / width;
 				const auto x = i % width;
+				const auto y = i / width;
 
 				data_[start_i + i]->node_center =
 				{
@@ -324,8 +324,8 @@ protected:
 
 			for (unsigned i = 0; i < n; ++i)
 			{
-				const auto y = i / width;
 				const auto x = i % width;
+				const auto y = i / width;
 
 				data_[start_i + i] = new tree_node(
 					start_i + i,
@@ -405,8 +405,8 @@ private:
 	                                                 const unsigned local_index) const
 	{
 		const auto width = static_cast<int>(pow(2, level));
-		const auto y = local_index / width;
 		const auto x = local_index % width;
+		const auto y = local_index / width;
 
 		std::vector<index_t> neighbors;
 		neighbors.reserve(8);
