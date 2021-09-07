@@ -47,10 +47,8 @@ std::vector<std::complex<double>> compute_ground_truth(const std::vector<body_pt
 
 int main()
 {
-	static constexpr bool show_rmse = true;
-
 	// Initialization of positions/masses
-	constexpr size_t num_bodies = 1024; // 262144
+	constexpr size_t num_bodies = 262144; // 262144
 	std::vector<body_ptr> bodies;
 
 	for (unsigned i = 0; i < num_bodies; ++i)
@@ -78,8 +76,10 @@ int main()
 	// Step 0) build the quadtree 
 
 	std::cout << "Start building the tree..." << std::endl;
-	auto qt = quadtree<5>();
+
+	auto qt = quadtree<9>();
 	//qt.debug_print();
+
 	std::cout << "	- Inserting nodes..." << std::endl;
 	std::for_each(bodies.begin(), bodies.end(), [&](const auto& body)
 	{
@@ -89,32 +89,51 @@ int main()
 
 	// Step 1) compute center of mass
 	std::cout << "Starting computing COM..." << std::endl;
+
 	qt.compute_com();
+
 	std::cout << "Finished computing COM..." << std::endl;
 
 	// Step 2) Compute multipoles
 	std::cout << "Starting computing multipoles..." << std::endl;
+
 	qt.compute_u();
+
 	std::cout << "Finished computing multipoles..." << std::endl;
 
 	// Step 3) Downward pass
 	std::cout << "Starting downward pass..." << std::endl;
+
 	qt.downward_pass();
+
 	std::cout << "Finished downward pass..." << std::endl;
 
 	// Step 4) Summing up with local direct N^2 neighbors.
 	std::cout << "Starting summation..." << std::endl;
+
 	qt.sum_direct_computation();
+
 	std::cout << "Finished summation..." << std::endl;
 
-	if constexpr (show_rmse)
+	if constexpr (constexpr bool show_rmse = false)
 	{
 		const auto ground_truth = compute_ground_truth(bodies);
 
+		double sum = 0;
 		for (unsigned i = 0; i < num_bodies; ++i)
+		{
+			sum += pow(ground_truth[i].real() - bodies[i]->u.real(), 2);
+		}
+
+		for (int i = 0; i < 50; ++i)
 		{
 			std::cout << ground_truth[i].real() << " --- " << bodies[i]->u.real() << std::endl;
 		}
+
+		constexpr auto n = static_cast<double>(num_bodies);
+		const auto rsme = sqrt(sum / n);
+
+		std::cout << "RMSE = " << rsme << std::endl;
 	}
 
 	return EXIT_SUCCESS;
