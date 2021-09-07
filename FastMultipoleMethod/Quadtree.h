@@ -277,8 +277,7 @@ public:
 			local_region.insert(local_region.end(), cur->contents.begin(), cur->contents.end());
 
 			// Do the N^2 algorithm for local region.
-			//pow(1, 1);
-			for (const body_ptr& body_p : local_region)
+			for (const body_ptr& body_p : cur->contents)
 			{
 				for (const body_ptr& body_q : local_region)
 				{
