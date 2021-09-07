@@ -47,10 +47,10 @@ std::vector<std::complex<double>> compute_ground_truth(const std::vector<body_pt
 
 int main()
 {
-	static constexpr bool show_rmse = true;
+	static constexpr bool show_rmse = false;
 
 	// Initialization of positions/masses
-	constexpr size_t num_bodies = 65536;
+	constexpr size_t num_bodies = 262144;
 	std::vector<body_ptr> bodies;
 
 	for (unsigned i = 0; i < num_bodies; ++i)
@@ -77,7 +77,7 @@ int main()
 	// Step 0) build the quadtree 
 
 	std::cout << "Start building the tree..." << std::endl;
-	auto qt = quadtree<8>();
+	auto qt = quadtree<9>();
 	//qt.debug_print();
 	std::cout << "	- Inserting nodes..." << std::endl;
 	std::for_each(bodies.begin(), bodies.end(), [&](const auto& body)
