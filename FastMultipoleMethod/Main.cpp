@@ -1,6 +1,7 @@
 #include <iostream>
 #include <complex>
 #include <random>
+#include <execution>
 
 #include "Body.h"
 #include "Quadtree.h"
@@ -26,18 +27,19 @@ std::vector<std::complex<double>> compute_ground_truth(const std::vector<body_pt
 {
 	std::vector<std::complex<double>> us(bodies.size());
 
-	for (const body_ptr& body_p : bodies)
+	std::for_each(std::execution::par, bodies.begin(), bodies.end(), [&](const body_ptr& body_p)
 	{
-		for (const body_ptr& body_q : bodies)
+		std::for_each(bodies.begin(), bodies.end(), [&](const body_ptr& body_q)
 		{
 			if (body_p->uid == body_q->uid)
 			{
-				continue;
+				return;
 			}
 
 			us[body_p->uid] += kernel_func(body_p->pos, body_q->pos) * body_q->mass;
-		}
-	}
+		});
+	});
+
 
 	return us;
 }
@@ -48,28 +50,26 @@ int main()
 	static constexpr bool show_rmse = true;
 
 	// Initialization of positions/masses
-	constexpr size_t num_bodies = 1024;
+	constexpr size_t num_bodies = 65536;
 	std::vector<body_ptr> bodies;
 
 	for (unsigned i = 0; i < num_bodies; ++i)
 	{
-		//const auto& pos = std::complex<double>{my_rand(), my_rand()};
-		//const auto& mass = my_rand() * 1.5;
-
-		const auto width = static_cast<unsigned>(pow(2, 5));
-		const double c = 1.0 / static_cast<double>(width);
-
-		const auto y = i / width;
-		const auto x = i % width;
+		const auto& mass = my_rand() * 1.5;
+		//const auto& mass = 1.0;
 
 
-		const auto& pos = std::complex<double>{
-			x * c + c / 2.0,
-			y * c + c / 2.0,
-		};
+		const auto& pos = std::complex<double>{my_rand(), my_rand()};
 
+		//const auto width = static_cast<unsigned>(pow(2, 5));
+		//const double c = 1.0 / static_cast<double>(width);
+		//const auto y = i / width;
+		//const auto x = i % width;
+		//const auto& pos = std::complex<double>{
+		//	x * c + c / 2.0,
+		//	y * c + c / 2.0,
+		//};
 
-		const auto& mass = 1.0;
 
 		bodies.push_back(std::make_shared<body<double>>(i, pos, mass));
 	}
@@ -77,8 +77,8 @@ int main()
 	// Step 0) build the quadtree 
 
 	std::cout << "Start building the tree..." << std::endl;
-	auto qt = quadtree<5>();
-	qt.debug_print();
+	auto qt = quadtree<8>();
+	//qt.debug_print();
 	std::cout << "	- Inserting nodes..." << std::endl;
 	std::for_each(bodies.begin(), bodies.end(), [&](const auto& body)
 	{
