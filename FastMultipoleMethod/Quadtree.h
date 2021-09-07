@@ -394,7 +394,6 @@ private:
 
 	std::array<std::pair<index_t, index_t>, Level> level_index_range_;
 
-public:
 	/// <summary>
 	/// 
 	/// </summary>
