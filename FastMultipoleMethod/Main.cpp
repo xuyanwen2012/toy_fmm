@@ -35,7 +35,7 @@ std::vector<std::complex<double>> compute_ground_truth(const std::vector<body_pt
 				continue;
 			}
 
-			us[body_p->uid] += kernel_func(body_p->pos, body_q->pos) * body_p->mass;
+			us[body_p->uid] += kernel_func(body_p->pos, body_q->pos) * body_q->mass;
 		}
 	}
 

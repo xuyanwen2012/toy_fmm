@@ -287,7 +287,7 @@ public:
 						continue;
 					}
 
-					body_p->u += kernel_func(body_p->pos, body_q->pos) * body_p->mass;
+					body_p->u += kernel_func(body_p->pos, body_q->pos) * body_q->mass;
 				}
 			}
 		}
