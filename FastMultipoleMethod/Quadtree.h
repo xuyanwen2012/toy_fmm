@@ -43,6 +43,8 @@ struct tree_node
 	std::complex<double> u{};
 	double node_mass{};
 	std::complex<double> node_center{}; // could be center of mass, or center of the box?
+	std::complex<double> weighted_pos{};
+
 
 	tree_node() = default;
 
@@ -65,7 +67,14 @@ struct tree_node
 			return acc + ptr->mass;
 		};
 
+		static auto sum2 = [&](const std::complex<double> acc, const body_ptr& ptr)
+		{
+			return acc + ptr->mass * ptr->pos;
+		};
+
 		node_mass = std::accumulate(contents.begin(), contents.end(), 0.0, sum);
+
+		weighted_pos = std::accumulate(contents.begin(), contents.end(), std::complex<double>(), sum2);
 	}
 
 	/// <summary>
@@ -191,16 +200,21 @@ public:
 			{
 				// dum way to compute the sum of 
 				double sum = 0.0;
+				std::complex<double> weighted_sum{};
 				for (unsigned child : node->children)
 				{
 					sum += data_[child]->node_mass;
+					weighted_sum += data_[child]->weighted_pos;
 				}
+
 				node->node_mass = sum;
+				node->weighted_pos = weighted_sum;
 			}
 		}
 
+
 		// setup the box center(or center of mass)
-		data_[0]->node_center = {0.5, 0.5};
+		data_[0]->node_center = { 0.5, 0.5 };
 		for (size_t l = 1; l < max_levels_; ++l)
 		{
 			const auto width = static_cast<unsigned>(pow(2, l));
@@ -219,6 +233,22 @@ public:
 				};
 			}
 		}
+
+
+		// Temp quick solution
+		const auto [start_i, _] = level_index_range_[max_levels_ - 1];
+		std::for_each(data_.rbegin(), data_.rend(), [start_i](tree_node* node)
+			{
+				if (node->uid >= start_i && node->contents.empty())
+				{
+					return;
+				}
+				node->node_center = node->weighted_pos / node->node_mass;
+
+				//std::cout << node->uid << ": " << node->node_mass << " ------ " << node->node_center << std::endl;
+			});
+
+
 	}
 
 	void compute_u()
