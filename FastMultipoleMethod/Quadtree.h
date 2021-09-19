@@ -214,7 +214,7 @@ public:
 
 
 		// setup the box center(or center of mass)
-		data_[0]->node_center = { 0.5, 0.5 };
+		data_[0]->node_center = {0.5, 0.5};
 		for (size_t l = 1; l < max_levels_; ++l)
 		{
 			const auto width = static_cast<unsigned>(pow(2, l));
@@ -238,17 +238,15 @@ public:
 		// Temp quick solution
 		const auto [start_i, _] = level_index_range_[max_levels_ - 1];
 		std::for_each(data_.rbegin(), data_.rend(), [start_i](tree_node* node)
+		{
+			if (node->uid >= start_i && node->contents.empty())
 			{
-				if (node->uid >= start_i && node->contents.empty())
-				{
-					return;
-				}
-				node->node_center = node->weighted_pos / node->node_mass;
+				return;
+			}
+			node->node_center = node->weighted_pos / node->node_mass;
 
-				//std::cout << node->uid << ": " << node->node_mass << " ------ " << node->node_center << std::endl;
-			});
-
-
+			//std::cout << node->uid << ": " << node->node_mass << " ------ " << node->node_center << std::endl;
+		});
 	}
 
 	void compute_u()
@@ -291,8 +289,12 @@ public:
 		const auto last_level = max_levels_ - 1;
 		const auto [start_i, n] = level_index_range_[last_level];
 
-		for (unsigned i = 0; i < n; ++i)
+
+		const auto leafs = boxes_at_level(last_level);
+		std::for_each(std::execution::par, leafs.b, leafs.e, [&](tree_node* cur_box)
 		{
+			const unsigned i = cur_box->uid - start_i;
+
 			std::vector<body_ptr> local_region;
 
 			for (unsigned neighbor : get_neighbors(last_level, start_i, i))
@@ -303,11 +305,11 @@ public:
 				}
 			}
 
-			const tree_node* cur = data_[start_i + i];
-			local_region.insert(local_region.end(), cur->contents.begin(), cur->contents.end());
+			local_region.insert(local_region.end(), cur_box->contents.begin(), cur_box->contents.end());
+
 
 			// Do the N^2 algorithm for local region.
-			for (const body_ptr& body_p : cur->contents)
+			for (const body_ptr& body_p : cur_box->contents)
 			{
 				for (const body_ptr& body_q : local_region)
 				{
@@ -319,7 +321,38 @@ public:
 					body_p->u += kernel_func(body_p->pos, body_q->pos) * body_q->mass;
 				}
 			}
-		}
+		});
+
+
+		//for (unsigned i = 0; i < n; ++i)
+		//{
+		//	std::vector<body_ptr> local_region;
+
+		//	for (unsigned neighbor : get_neighbors(last_level, start_i, i))
+		//	{
+		//		for (const auto& p : data_[neighbor]->contents)
+		//		{
+		//			local_region.push_back(p);
+		//		}
+		//	}
+
+		//	const tree_node* cur = data_[start_i + i];
+		//	local_region.insert(local_region.end(), cur->contents.begin(), cur->contents.end());
+
+		//	// Do the N^2 algorithm for local region.
+		//	for (const body_ptr& body_p : cur->contents)
+		//	{
+		//		for (const body_ptr& body_q : local_region)
+		//		{
+		//			if (body_p->uid == body_q->uid)
+		//			{
+		//				continue;
+		//			}
+
+		//			body_p->u += kernel_func(body_p->pos, body_q->pos) * body_q->mass;
+		//		}
+		//	}
+		//}
 	}
 
 protected:
